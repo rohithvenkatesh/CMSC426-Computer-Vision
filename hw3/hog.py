@@ -6,7 +6,8 @@ import matplotlib.pyplot as plt
 
 import helpers
 
-im = Image.open("input.jpg")
+im = Image.open("./input.jpg")
+# print(im.size)
 im = im.convert('L')
 img = np.array(im).astype(np.float32)
 
