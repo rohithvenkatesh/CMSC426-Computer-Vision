@@ -23,7 +23,7 @@ def convolve(im_arr, f, pad=True):
 
 	return img_out.astype(np.float32)
 
-def gradient_calc(img):
+def gradient(img):
 	Kx = np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]], np.float32)
 	Ky = np.array([[1, 2, 1], [0, 0, 0], [-1, -2, -1]], np.float32)
 
