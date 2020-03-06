@@ -1,12 +1,10 @@
 import numpy as np
 from PIL import Image, ImageDraw
-import math as m
-import matplotlib.pyplot as plt
 
 import helpers as hp
 
 ## GLOBALS ##
-IMG_SIZE = 400
+IMG_SIZE = 128
 N_BUCKETS = 9
 CELL_SIZE = 8
 
@@ -37,11 +35,11 @@ def make_cells(M, D):
 			cells[int(i/CELL_SIZE), int(j/CELL_SIZE)] = get_cell_histogram(cell_M, cell_D)
 	return cells
 
-## GET HOG FEATUER VECTOR ##
+## GET HOG FEATURE VECTOR ##
 def hog_feature_vector(cells):
 	vectors = []
-	for i in range(0, cells.shape[0], 2):
-		for j in range(0, cells.shape[1], 2):
+	for i in range(0, cells.shape[0]-1):
+		for j in range(0, cells.shape[1]-1):
 			vector = np.concatenate((cells[i,j], cells[i,j+1], cells[i+1,j], cells[i+1, j+1]))
 			vector = vector / np.linalg.norm(vector)
 			vectors.append(vector)
@@ -54,5 +52,6 @@ def HOG(img_name):
 
 	M, D = hp.gradient(img)
 	cells = make_cells(M,D)
-	histogram = hog_feature_vector(cells)
+	histogram = hog_feature_vector(cells).flatten()
+
 	return histogram
