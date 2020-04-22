@@ -1,13 +1,13 @@
 from PIL import Image, ImageDraw
 import argparse
-import cnn
+import test2
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torchvision
 import torchvision.transforms as transforms
 import torchvision.transforms.functional as TF
-from cnn import CNN, dataset, test
+from test2 import CNN, dataset 
 from torch.autograd import Variable
 
 def get_crops(im, scale_factor):
@@ -23,7 +23,7 @@ def multiscale(image):
 	imw, imh = image.size
 	crops = []
 	scale_factor = 1
-	factor = 0.95
+	factor = 0.80
 	while imw >= 64 and imh >= 128:
 		crops += get_crops(image, scale_factor) 
 		imw, imh = image.size
@@ -31,7 +31,7 @@ def multiscale(image):
 		scale_factor = scale_factor * factor
 	return crops
 
-def detect_pedestrians(image, ped_threshold, nms_threshold):
+def detect_pedestrians(image, output_name, ped_threshold, nms_threshold):
 	crops = multiscale(image)
 	locations, boxes, scores = [], [], []
 	for img, location in crops:
@@ -48,18 +48,18 @@ def detect_pedestrians(image, ped_threshold, nms_threshold):
 	selected = torchvision.ops.nms(boxes, scores, nms_threshold).tolist()
 	for i in selected:
 		ImageDraw.Draw(image, 'RGBA').rectangle(locations[i], outline='green', fill=(0, 150, 0, 60))
-	image.save("detected_pedestrians.png")
+	image.save(output_name)
 
-## RUN WITH --image flag and provide path to image as string 
+## RUN WITH WEIGHTS, INPUT, OUTPUT FLAGS (--weights, --input, --output)
+## EXAMPLE: python evaluate.py --weights 'trained_model.pt' --input 'pic.jpg' --output 'save.jpg'     
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='code')
-	parser.add_argument('--image', type=str, default=None, help='Image to Scan')
+	parser.add_argument('--weights', type=str, default='trained_model.pt', help='CNN weights')
+	parser.add_argument('--input', type=str, default=None, help='Image to Scan')
+	parser.add_argument('--output', type=str, default='detected_pedestrians.png', help='Image to Save to')
 	args = parser.parse_args()
 
 	model = CNN().eval()
-	model.load_state_dict(torch.load('trained_model.pt'))
-	try:
-		image = Image.open(args.image).convert('RGB')
-		detect_pedestrians(image, 0.99, 0.04) # can change pedestrian detection threshold and nms threshold for different results
-	except:
-		print("Provide correct path to image with --image flag")
+	model.load_state_dict(torch.load(args.weights))
+	image = Image.open(args.input).convert('RGB')
+	detect_pedestrians(image, args.output, 0.99, 0.04) # can change pedestrian detection threshold and nms threshold for different results
